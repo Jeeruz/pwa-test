@@ -1,18 +1,18 @@
 const CACHE_NAME = 'xmas-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/pwa-test/',
+  '/pwa-test/index.html',
+  '/pwa-test/manifest.json'
 ];
 
-// Install and cache the app shell
+// Cache the necessary files
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
-// Fetch from cache or network
+// Offline support: Network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
