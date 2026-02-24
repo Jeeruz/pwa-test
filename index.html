@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christmas Countdown PWA</title>
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Christmas Countdown","short_name":"XmasTimer","start_url":".","display":"standalone","background_color":"#0a4d26","theme_color":"#b3000c","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/744/744546.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#b3000c">
     
     <style>
         :root { --gold: #ffd700; --berry: #b3000c; --forest: #0a4d26; }
@@ -50,53 +51,23 @@
     </div>
 
     <script>
-        /*******************************************************************************
-         * HOW TO MAKE A WEB PROGRESSIVE APP (PWA) - STEP-BY-STEP INSTRUCTIONS
-         *******************************************************************************
-         * * STEP 1: RESPONSIVE DESIGN
-         * Your app must work on all screen sizes. This is handled in the <head> with:
-         * <meta name="viewport" content="width=device-width, initial-scale=1.0">
-         * * STEP 2: THE WEB MANIFEST
-         * A PWA needs a JSON file (or data URI) linked in the <head>. 
-         * This tells the device:
-         * - What is the app called? (name)
-         * - What does the icon look like? (icons)
-         * - Should it hide the browser address bar? (display: "standalone")
-         * * STEP 3: SERVICE WORKER REGISTRATION (Required for "Install" prompt)
-         * Browsers won't allow installation unless you have a script running in 
-         * the background (Service Worker) to handle offline caching.
-         *
-         * STEP 4: HTTPS HOSTING
-         * PWAs will NOT work over 'http'. You must host your file on a secure 
-         * 'https' server (e.g., GitHub Pages, Vercel, or Netlify).
-         *
-         *******************************************************************************/
-
-        // --- 1. THE COUNTDOWN LOGIC ---
-        // Basic JavaScript to calculate time differences and update the UI.
+        // --- COUNTDOWN & SNOW LOGIC ---
         function updateCountdown() {
             const now = new Date();
             const year = now.getFullYear();
             let xmas = new Date(`December 25, ${year} 00:00:00`);
-
-            // If it's already past Dec 25th, target next year.
             if (now > xmas) { xmas = new Date(`December 25, ${year + 1} 00:00:00`); }
-
             const diff = xmas - now;
             const d = Math.floor(diff / (1000 * 60 * 60 * 24));
             const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
-
-            // padStart(2, '0') ensures we see "05" instead of just "5"
             document.getElementById('days').innerText = d.toString().padStart(2, '0');
             document.getElementById('hours').innerText = h.toString().padStart(2, '0');
             document.getElementById('minutes').innerText = m.toString().padStart(2, '0');
             document.getElementById('seconds').innerText = s.toString().padStart(2, '0');
         }
 
-        // --- 2. SNOW GENERATOR ---
-        // Creates snowflake elements dynamically to keep the HTML file clean.
         function createSnow() {
             const flake = document.createElement('div');
             flake.classList.add('snow');
@@ -105,37 +76,21 @@
             flake.style.animationDuration = Math.random() * 3 + 2 + 's';
             flake.style.opacity = Math.random();
             flake.style.fontSize = Math.random() * 10 + 10 + 'px';
-            
             document.body.appendChild(flake);
-            setTimeout(() => flake.remove(), 5000); // Cleanup to prevent memory leaks
+            setTimeout(() => flake.remove(), 5000);
         }
 
-        // Initialize timers
         setInterval(updateCountdown, 1000);
         setInterval(createSnow, 200);
         updateCountdown();
 
-        // --- 3. THE PWA SERVICE WORKER (CORE ENGINE) ---
-        // This registers a background script that makes the app installable.
+        // --- PWA SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
-            /** * In a normal PWA, this would be a separate file like 'sw.js'.
-             * For this one-file version, we create a 'Blob' (a virtual file) on the fly.
-             */
-            const swCode = `
-                const CACHE_NAME = 'xmas-v1';
-                self.addEventListener('fetch', (event) => {
-                    // This is a "Network First" strategy. 
-                    // It tries to get the latest data but works offline if needed.
-                    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
-                });
-            `;
-            
-            const blob = new Blob([swCode], { type: 'text/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swUrl)
-                .then(() => console.log("PWA: Ready to install!"))
-                .catch(err => console.log("PWA: Service Worker failed", err));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered!', reg))
+                    .catch(err => console.error('SW registration failed:', err));
+            });
         }
     </script>
 </body>
