@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christmas Countdown PWA</title>
     
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/pwa-test/manifest.json">
     <meta name="theme-color" content="#b3000c">
     
     <style>
@@ -51,7 +51,7 @@
     </div>
 
     <script>
-        // --- COUNTDOWN & SNOW LOGIC ---
+        // --- COUNTDOWN LOGIC ---
         function updateCountdown() {
             const now = new Date();
             const year = now.getFullYear();
@@ -84,12 +84,13 @@
         setInterval(createSnow, 200);
         updateCountdown();
 
-        // --- PWA SERVICE WORKER REGISTRATION ---
+        // --- CORRECTED SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.error('SW registration failed:', err));
+                // Pointing specifically to your repo subfolder
+                navigator.serviceWorker.register('/pwa-test/sw.js', { scope: '/pwa-test/' })
+                    .then(reg => console.log('PWA: Service Worker Registered!', reg))
+                    .catch(err => console.error('PWA: Registration Failed:', err));
             });
         }
     </script>
